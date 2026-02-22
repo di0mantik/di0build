@@ -1,0 +1,8 @@
+links:
+  - from: fish
+    to: ~/.config/fish
+  - from: hypr
+    to: ~/.config/hypr
+packages:
+  - fish
+  - hyprland
