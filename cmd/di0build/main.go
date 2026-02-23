@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"di0build/internal/config"
+	"di0build/internal/model"
 )
 
 func main() {
@@ -13,4 +14,5 @@ func main() {
 	}
 
 	cfg := config.MustLoad(cfgPath)
+	model.RunInstaller(cfg)
 }

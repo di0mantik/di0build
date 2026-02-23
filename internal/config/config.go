@@ -8,12 +8,12 @@ import (
 )
 
 type SymLink struct {
-	From string `yaml:"to"`
-	To   string `yaml:"from"`
+	From string `yaml:"from"`
+	To   string `yaml:"to"`
 }
 
 type Config struct {
-	Links    []*SymLink `yaml:"links"`
+	Symlinks []*SymLink `yaml:"links"`
 	Packages []string   `yaml:"packages"`
 }
 
