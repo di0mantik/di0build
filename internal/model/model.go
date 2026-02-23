@@ -26,6 +26,9 @@ type Model struct {
 	Cfg          *config.Config
 	CurrentIndex int
 	Phase        Phase
+	
+	InstallPackgesWithErr bool
+	CreateSymlinksWithErr bool
 
 	IsQuitting bool
 	Width      int
@@ -84,7 +87,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		text := fmt.Sprintf(" %s %s", doneMark, pkg)
 		if msg.Err != nil {
-			err := fmt.Sprintf("%v", msg.Err)
+			if !m.InstallPackgesWithErr {
+				m.InstallPackgesWithErr = true
+			}
+			err := strings.TrimSpace(fmt.Sprintf("%v", msg.Err))
 			text = fmt.Sprintf(" %s %s\n    %v",
 				failMark, pkg, errorDescStyle.Render(err))
 		}
@@ -93,9 +99,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.CurrentIndex = 0
 			m.Phase = Symlinks
 			progressCmd := m.Progress.SetPercent(0)
+			doneCmd := tea.Printf("Done! Packages installed")
+			if m.InstallPackgesWithErr {
+				doneCmd = tea.Printf("Done! Packages installed, but with errors")
+			}
 			return m, tea.Sequence(
 				tea.Printf("%s", text),
-				tea.Printf("Done! Packages installed\n\nCreating symlinks..."),
+				doneCmd,
+				tea.Printf("\nCreating symlinks..."),
 				progressCmd,
 				createNextSymlink(&m),
 			)
@@ -115,6 +126,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		text := fmt.Sprintf(" %s %s -> %s", doneMark, link.From, link.To)
 		if msg.Err != nil {
+			if !m.CreateSymlinksWithErr {
+				m.CreateSymlinksWithErr = true
+			}
 			err := fmt.Sprintf("%v", msg.Err)
 			text = fmt.Sprintf(" %s %s -> %s\n    %v",
 				failMark, link.From, link.To, errorDescStyle.Render(err))
@@ -122,9 +136,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if m.CurrentIndex >= len(m.Cfg.Symlinks) {
 			m.IsQuitting = true
+			doneCmd := tea.Printf("Done! Symlinks created")
+			if m.CreateSymlinksWithErr {
+				doneCmd = tea.Printf("Done! Symlinks created, but with errors")
+			}
 			return m, tea.Sequence(
 				tea.Printf("%s", text),
-				tea.Printf("Done! Symlinks created"),
+				doneCmd,
 				tea.Quit,
 			)
 		}

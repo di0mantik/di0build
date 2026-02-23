@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"di0build/internal/config"
@@ -10,7 +11,8 @@ import (
 func main() {
 	cfgPath := os.Getenv("CONFIG_PATH")
 	if cfgPath == "" {
-		cfgPath = "~/.dotfiles/di0build.yaml"
+		homeDir, _ := os.UserHomeDir()
+		cfgPath = fmt.Sprintf("%s/.dotfiles/di0build.yaml", homeDir)
 	}
 
 	cfg := config.MustLoad(cfgPath)
